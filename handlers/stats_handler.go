@@ -13,8 +13,6 @@ import (
 
 const serviceName = "demo-app"
 
-var _hostName = getHost()
-
 // WithStats wraps handlers with stats reporting. It tracks metrics such
 // as the number of requests per endpoint, the latency, etc.
 func WithStats(h http.HandlerFunc) http.HandlerFunc {
@@ -30,18 +28,6 @@ func WithStats(h http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func getHost() string {
-	host, err := os.Hostname()
-	if err != nil {
-		return ""
-	}
-
-	if idx := strings.IndexByte(host, '.'); idx > 0 {
-		host = host[:idx]
-	}
-	return host
-}
-
 func getStatsTags(r *http.Request) map[string]string {
 	userBrowser, userOS := parseUserAgent(r.UserAgent())
 	stats := map[string]string{
@@ -53,12 +39,9 @@ func getStatsTags(r *http.Request) map[string]string {
 	if err == nil {
 		if idx := strings.IndexByte(host, '.'); idx > 0 {
 			host = host[:idx]
-			stats["host"] = host
 		}
+		stats["host"] = host
 	}
-	// if _hostName != "" {
-	// 	stats["host"] = _hostName
-	// }
 	return stats
 }
 
@@ -71,5 +54,6 @@ func parseUserAgent(uaString string) (browser, os string) {
 	if ua.OS != nil {
 		os = ua.OS.Name
 	}
+
 	return browser, os
 }
