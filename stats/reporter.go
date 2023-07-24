@@ -4,10 +4,17 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"sync"
 	"time"
 )
 
 var printStats = flag.Bool("printStats", false, "Print stats to console")
+
+var bufPool = sync.Pool{
+	New: func() interface{} {
+		return &bytes.Buffer{}
+	},
+}
 
 // IncCounter increments a counter.
 func IncCounter(name string, tags map[string]string, value int64) {
@@ -44,7 +51,9 @@ func addTagsToName(name string, tags map[string]string) string {
 	}
 	keyOrder = append(keyOrder, "endpoint", "os", "browser")
 
-	buf := &bytes.Buffer{}
+	buf := bufPool.Get().(*bytes.Buffer)
+	buf.Reset()
+	defer bufPool.Put(buf)
 	
 	buf.WriteString(name)
 	for _, k := range keyOrder {
